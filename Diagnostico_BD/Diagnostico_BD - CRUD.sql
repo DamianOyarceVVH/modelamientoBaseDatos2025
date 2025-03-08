@@ -89,9 +89,9 @@ SET fecha = '2023-9-10' WHERE diagnostico = 'Dolor de cabeza crónico';
 UPDATE consultas 
 SET motivo = 'Sarpullido' WHERE fecha = '2023-11-16';
 
-UPDATE pacientes 
-SET nombre = 'Martin' WHERE RUT = '55667788-0';
+UPDATE usuarios 
+SET email = 'r3cEpc1onIst41@egmail.com' WHERE nombre = 'Recepcionista1';
 
 -- DELETE
-DELETE FROM pacientes
-WHERE RUT = '99887766-2'
+DELETE FROM tipos_usuarios
+WHERE nombre = 'Administrador'

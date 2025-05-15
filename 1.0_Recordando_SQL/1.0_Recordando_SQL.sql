@@ -5,8 +5,9 @@ use mercado;
 create table usuarios (
 id_usuario int auto_increment primary key,
 nombre varchar(100) not null,
+password varchar(100) not null,
 correo varchar(100) not null unique,
-tipo_usuario_id int not null,
+tipo_usuario_id int,
 created_at datetime default current_timestamp,
 updated_at datetime default current_timestamp
 on update current_timestamp,
@@ -31,7 +32,7 @@ create table productos (
 id_producto int auto_increment primary key,
 nombre varchar(100) not null,
 precio float not null,
-stock int not null,
+stock int,
 created_at datetime default current_timestamp,
 updated_at datetime default current_timestamp
 on update current_timestamp,
@@ -42,7 +43,7 @@ deleted boolean default false
 
 create table ventas (
 id_venta int auto_increment primary key,
-usuario_id int not null,
+usuario_id int,
 fecha date not null,
 created_at datetime default current_timestamp,
 updated_at datetime default current_timestamp
@@ -54,8 +55,8 @@ deleted boolean default false
 
 create table detalles_ventas (
 id_detalle_venta int auto_increment primary key,
-venta_id int not null,
-producto_id int not null,
+venta_id int,
+producto_id int,
 cantidad int not null,
 precio_unitario float not null,
 created_at datetime default current_timestamp,

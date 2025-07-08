@@ -5,7 +5,7 @@ USE ejemploSelect;
 -- Tabla: tipo_usuarios
 CREATE TABLE tipo_usuarios (
     id_tipo INT AUTO_INCREMENT NOT NULL PRIMARY KEY, 
-    nombre_tipo VARCHAR(50) NOT NULL CHECK (LENGTH(nombre_tipo) >= 3), 
+    nombre_tipo VARCHAR(50) NOT NULL CHECK (LENGTH(nombre_tipo) >= 3), -- CHECK: exige que el nombre tenga al menos 3 caracteres
     descripcion_tipo VARCHAR(200) NOT NULL,
     created_by INT,
     updated_by INT,
@@ -19,7 +19,7 @@ CREATE TABLE usuarios (
     id_usuario INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     contrasenna VARCHAR(200) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE CHECK (email LIKE '%@%.%'),
+    email VARCHAR(100) NOT NULL UNIQUE CHECK (email LIKE '%@%.%'), -- CHECK: exige que el email contenga un '@' y un punto
     created_by INT,
     updated_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -33,7 +33,7 @@ CREATE TABLE usuarios (
 CREATE TABLE ciudad (
     id_ciudad INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     nombre_ciudad VARCHAR(100) NOT NULL,
-    region VARCHAR(100) CHECK (region IN ('Metropolitana', 'Valparaíso', 'Biobío', 'Los Lagos', 'Coquimbo')),
+    region VARCHAR(100) CHECK (region IN ('Metropolitana', 'Valparaíso', 'Biobío', 'Los Lagos', 'Coquimbo')), -- CHECK: solo permite regiones específicas
     created_by INT,
     updated_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -45,7 +45,7 @@ CREATE TABLE ciudad (
 CREATE TABLE personas (
     rut VARCHAR(13) NOT NULL UNIQUE,
     nombre_completo VARCHAR(100) NOT NULL,
-    fecha_nac DATE CHECK (fecha_nac >= '1900-01-01'),
+    fecha_nac DATE CHECK (fecha_nac >= '1900-01-01'), -- CHECK: solo permite fechas de nacimiento desde 1900-01-01 en adelante
     created_by INT,
     updated_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

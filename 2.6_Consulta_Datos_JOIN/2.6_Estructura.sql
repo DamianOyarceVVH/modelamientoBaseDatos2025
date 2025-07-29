@@ -301,10 +301,10 @@ VALUES
 ('2025-07-01', 'Tos persistente y secrecion nasal', 1, 1, 1, 1),
 ('2025-07-02', 'Rascado constante en orejas', 2, 2, 2, 1),
 ('2025-07-03', 'Vomitos luego de cambio de dieta', 3, 3, 1, 1),
-('2025-07-04', 'Urgencia, Piel roja y picazon intensa', 4, 4, 2, 1),
+('2025-07-04', 'Urgencia Piel roja y picazon intensa', 4, 4, 2, 1),
 ('2025-07-05', 'Cojea al caminar posible fractura', 5, 5, 1, 1),
 ('2025-07-06', 'Orina con mal olor y color', 6, 6, 2, 1),
 ('2025-07-07', 'Ojo con lagrimeo constante', 7, 7, 1, 1),
 ('2025-07-08', 'Estornudos frecuentes en gato', 8, 8, 2, 1),
-('2025-07-09', 'Mordida en pelea con otro perro, urgencia', 9, 9, 1, 1),
+('2025-07-09', 'Mordida en pelea con otro perro urgencia', 9, 9, 1, 1),
 ('2025-07-10', 'Delgadez y caida de pelo', 10, 10, 2, 1);

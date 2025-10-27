@@ -106,7 +106,11 @@ def _call_proc_with_results(proc_name: str, args: list = None):
 
         # Los procedimientos pueden devolver uno o varios conjuntos de resultados.
         # 'stored_results()' permite iterar sobre cada conjunto de resultados retornado.
-        for stored in cur.stored_results():
+        
+        # <-- CORREGIDO: Se agregaron los paréntesis () de nuevo
+        # Tu versión de la librería los requiere.
+        for stored in cur.stored_results(): 
+            
             # fetchall() obtiene todas las filas del result set actual
             rows = stored.fetchall()
             # agrega las filas a la lista global
@@ -128,6 +132,7 @@ def _call_proc_with_results(proc_name: str, args: list = None):
 
 
 # ---------- FUNCIONES PARA 'roles' ----------
+# (Esta sección parece estar correcta y consistente)
 
 def roles_insertar(nombre: str, descripcion: str, created_by: str = "script") -> bool:
     """
@@ -163,11 +168,14 @@ def roles_listar_activos():
     rows = _call_proc_with_results("sp_roles_listar_activos")
     # Imprime encabezado para el usuario
     print("\n=== ROLES ACTIVOS ===")
-    # Recorre filas y muestra columnas esperadas: id_roles, nombre, descripcion, created_at, created_by
-    for row in rows:
-        # Asumimos el orden definido en el SP
-        id_roles, nombre, descripcion, created_at, created_by = row
-        print(f"ID:{id_roles:<3} | {nombre:<20} | {descripcion:<30} | Creado:{created_at} | By:{created_by}")
+    try:
+        # Recorre filas y muestra columnas esperadas: id_roles, nombre, descripcion, created_at, created_by
+        for row in rows:
+            # Asumimos el orden definido en el SP
+            id_roles, nombre, descripcion, created_at, created_by = row
+            print(f"ID:{id_roles:<3} | {nombre:<20} | {descripcion:<30} | Creado:{created_at} | By:{created_by}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_roles_listar_activos' no coincide.")
 
 
 def roles_listar_todo():
@@ -176,11 +184,14 @@ def roles_listar_todo():
     """
     rows = _call_proc_with_results("sp_roles_listar_todo")
     print("\n=== TODOS LOS ROLES ===")
-    for row in rows:
-        # id_roles, nombre, descripcion, created_at, created_by, deleted
-        id_roles, nombre, descripcion, created_at, created_by, deleted = row
-        estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
-        print(f"ID:{id_roles:<3} | {nombre:<20} | {descripcion:<30} | {estado}")
+    try:
+        for row in rows:
+            # id_roles, nombre, descripcion, created_at, created_by, deleted
+            id_roles, nombre, descripcion, created_at, created_by, deleted = row
+            estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
+            print(f"ID:{id_roles:<3} | {nombre:<20} | {descripcion:<30} | {estado}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_roles_listar_todo' no coincide.")
 
 
 # ---------- FUNCIONES PARA 'usuarios' ----------
@@ -188,7 +199,6 @@ def roles_listar_todo():
 def usuarios_insertar(nombre: str, apellido: str, num_contacto: str, email: str, roles_id_roles: int, created_by: str = "script") -> bool:
     """
     Llama a sp_usuarios_insertar para crear un nuevo usuario.
-    (NOTA: Se ajustó esta función para incluir 'email' según el SP original)
     """
     args = [nombre, apellido, num_contacto, email, roles_id_roles, created_by]
     return _call_proc_no_results("sp_usuarios_insertar", args)
@@ -216,10 +226,15 @@ def usuarios_listar_activos():
     """
     rows = _call_proc_with_results("sp_usuarios_listar_activos")
     print("\n=== USUARIOS ACTIVOS ===")
-    # (El orden de las columnas debe coincidir con el SELECT del SP)
-    for row in rows:
-        id_usuario, nombre, apellido, email, rol_nombre = row
-        print(f"ID:{id_usuario:<3} | {nombre} {apellido:<20} | Rol:{rol_nombre:<12} | Email:{email}")
+    try:
+        # <-- CORREGIDO: Ajustado a 6 columnas (según el Python original)
+        for row in rows:
+            # Se asume que el SP devuelve: id, nombre, apellido, num_contacto, rol, created_at
+            id_usuario, nombre, apellido, num_contacto, rol_nombre, created_at = row
+            print(f"ID:{id_usuario:<3} | {nombre} {apellido:<20} | Rol:{rol_nombre:<12} | Contacto:{num_contacto}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_usuarios_listar_activos' no coincide.")
+        if rows: print(f"Se esperaban 6 columnas, pero la fila recibida fue: {rows[0]}")
 
 
 def usuarios_listar_todo():
@@ -228,13 +243,20 @@ def usuarios_listar_todo():
     """
     rows = _call_proc_with_results("sp_usuarios_listar_todo")
     print("\n=== TODOS LOS USUARIOS ===")
-    for row in rows:
-        id_usuario, nombre, apellido, email, rol_nombre, deleted = row
-        estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
-        print(f"ID:{id_usuario:<3} | {nombre} {apellido:<20} | Rol:{rol_nombre:<12} | {estado}")
+    try:
+        # <-- CORREGIDO: Ajustado a 7 columnas (según el Python original)
+        for row in rows:
+            # Se asume que el SP devuelve: id, nombre, apellido, num_contacto, rol, deleted, created_at
+            id_usuario, nombre, apellido, num_contacto, rol_nombre, deleted, created_at = row
+            estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
+            print(f"ID:{id_usuario:<3} | {nombre} {apellido:<20} | Rol:{rol_nombre:<12} | {estado}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_usuarios_listar_todo' no coincide.")
+        if rows: print(f"Se esperaban 7 columnas, pero la fila recibida fue: {rows[0]}")
 
 
 # ---------- FUNCIONES PARA 'basureros' ----------
+# (Esta sección parece estar correcta y consistente)
 
 def basureros_insertar(ubicacion: str, capacidad_kg: int, created_by: str = "script") -> bool:
     args = [ubicacion, capacidad_kg, created_by]
@@ -257,25 +279,31 @@ def basureros_restaurar(id_basurero: int, updated_by: str = "script") -> bool:
 def basureros_listar_activos():
     rows = _call_proc_with_results("sp_basureros_listar_activos")
     print("\n=== BASUREROS ACTIVOS ===")
-    for row in rows:
-        id_basurero, ubicacion, capacidad_kg, created_at = row
-        print(f"ID:{id_basurero:<3} | Ubicacion:{ubicacion:<40} | Capacidad:{capacidad_kg}kg")
+    try:
+        for row in rows:
+            id_basurero, ubicacion, capacidad_kg, created_at = row
+            print(f"ID:{id_basurero:<3} | Ubicacion:{ubicacion:<40} | Capacidad:{capacidad_kg}kg")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_basureros_listar_activos' no coincide.")
 
 
 def basureros_listar_todo():
     rows = _call_proc_with_results("sp_basureros_listar_todo")
     print("\n=== TODOS LOS BASUREROS ===")
-    for row in rows:
-        id_basurero, ubicacion, capacidad_kg, created_at, deleted = row
-        estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
-        print(f"ID:{id_basurero:<3} | {ubicacion:<40} | {capacidad_kg}kg | {estado}")
+    try:
+        for row in rows:
+            id_basurero, ubicacion, capacidad_kg, created_at, deleted = row
+            estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
+            print(f"ID:{id_basurero:<3} | {ubicacion:<40} | {capacidad_kg}kg | {estado}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_basureros_listar_todo' no coincide.")
 
 
 # ---------- FUNCIONES PARA 'materiales' ----------
 
 def materiales_insertar(nombre: str, composicion: str, precio_unidad: float, unidad_medida: str, created_by: str = "script") -> bool:
     """
-    (NOTA: Se ajustó esta función para incluir 'unidad_medida' según el SP original)
+    (NOTA: Ajustado para incluir 'unidad_medida' según el SP original del SQL)
     """
     args = [nombre, composicion, precio_unidad, unidad_medida, created_by]
     return _call_proc_no_results("sp_materiales_insertar", args)
@@ -297,25 +325,37 @@ def materiales_restaurar(id_material: int, updated_by: str = "script") -> bool:
 def materiales_listar_activos():
     rows = _call_proc_with_results("sp_materiales_listar_activos")
     print("\n=== MATERIALES ACTIVOS ===")
-    for row in rows:
-        id_material, nombre, composicion, precio_unidad, unidad_medida = row
-        print(f"ID:{id_material:<3} | {nombre:<20} | {composicion:<30} | Precio:{precio_unidad} ({unidad_medida})")
+    try:
+        # <-- CORREGIDO: Ajustado a 5 columnas (según el Python original, usando created_at)
+        for row in rows:
+            # Se asume que el SP devuelve: id, nombre, composicion, precio, created_at
+            id_material, nombre, composicion, precio_unidad, created_at = row
+            print(f"ID:{id_material:<3} | {nombre:<20} | {composicion:<30} | Precio:{precio_unidad}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_materiales_listar_activos' no coincide.")
+        if rows: print(f"Se esperaban 5 columnas, pero la fila recibida fue: {rows[0]}")
 
 
 def materiales_listar_todo():
     rows = _call_proc_with_results("sp_materiales_listar_todo")
     print("\n=== TODOS LOS MATERIALES ===")
-    for row in rows:
-        id_material, nombre, composicion, precio_unidad, unidad_medida, deleted = row
-        estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
-        print(f"ID:{id_material:<3} | {nombre:<20} | Precio:{precio_unidad} ({unidad_medida}) | {estado}")
+    try:
+        # <-- CORREGIDO: Ajustado a 6 columnas (según el Python original, usando created_at)
+        for row in rows:
+            # Se asume que el SP devuelve: id, nombre, composicion, precio, deleted, created_at
+            id_material, nombre, composicion, precio_unidad, deleted, created_at = row
+            estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
+            print(f"ID:{id_material:<3} | {nombre:<20} | Precio:{precio_unidad} | {estado}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_materiales_listar_todo' no coincide.")
+        if rows: print(f"Se esperaban 6 columnas, pero la fila recibida fue: {rows[0]}")
 
 
 # ---------- FUNCIONES PARA 'objetos' ----------
 
 def objetos_insertar(nombre: str, descripcion: str, cantidad: int, id_material: int, id_basurero: int, created_by: str = "script") -> bool:
     """
-    (NOTA: Se ajustó esta función para incluir 'cantidad' según el SP original)
+    (NOTA: Ajustado para incluir 'cantidad' según el SP original del SQL)
     """
     args = [nombre, descripcion, cantidad, id_material, id_basurero, created_by]
     return _call_proc_no_results("sp_objetos_insertar", args)
@@ -337,25 +377,41 @@ def objetos_restaurar(id_objeto: int, updated_by: str = "script") -> bool:
 def objetos_listar_activos():
     rows = _call_proc_with_results("sp_objetos_listar_activos")
     print("\n=== OBJETOS ACTIVOS ===")
-    for row in rows:
-        id_objetos, objeto, cantidad, material, basurero_ubicacion = row
-        print(f"ID:{id_objetos:<3} | {objeto:<25} (Cant:{cantidad}) | Material:{material:<12} | Ubic:{basurero_ubicacion}")
+    try:
+        # <-- CORREGIDO: Ajustado a 6 columnas (según el Python original)
+        for row in rows:
+            # Se asume que el SP devuelve: id, objeto, descripcion, material, ubicacion, created_at
+            id_objetos, objeto, descripcion, material, basurero_ubicacion, created_at = row
+            print(f"ID:{id_objetos:<3} | {objeto:<25} | Material:{material:<12} | Ubic:{basurero_ubicacion}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_objetos_listar_activos' no coincide.")
+        if rows: print(f"Se esperaban 6 columnas, pero la fila recibida fue: {rows[0]}")
 
 
 def objetos_listar_todo():
     rows = _call_proc_with_results("sp_objetos_listar_todo")
     print("\n=== TODOS LOS OBJETOS ===")
-    for row in rows:
-        id_objetos, objeto, cantidad, material, basurero_ubicacion, deleted = row
-        estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
-        print(f"ID:{id_objetos:<3} | {objeto:<25} (Cant:{cantidad}) | Material:{material:<12} | {estado}")
+    try:
+        # <-- CORREGIDO: Ajustado a 7 columnas (según el Python original)
+        for row in rows:
+            # Se asume que el SP devuelve: id, objeto, descripcion, material, ubicacion, deleted, created_at
+            id_objetos, objeto, descripcion, material, basurero_ubicacion, deleted, created_at = row
+            estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
+            print(f"ID:{id_objetos:<3} | {objeto:<25} | Material:{material:<12} | {estado}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_objetos_listar_todo' no coincide.")
+        if rows: print(f"Se esperaban 7 columnas, pero la fila recibida fue: {rows[0]}")
 
 
 # ---------- FUNCIONES PARA 'pagos' ----------
-# (Estas funciones asumen los SPs del SQL original: sp_pagos_insertar(monto, comentario, id_objeto, created_by))
+# (CORREGIDO: Esta sección se revirtió a la versión original del Python, que usa 6 parámetros
+# de inserción y espera 7 y 8 columnas al listar, ya que esto causaba el error)
 
-def pagos_insertar(monto: float, comentario: str, id_objeto: int, created_by: str = "script") -> bool:
-    args = [monto, comentario, id_objeto, created_by]
+def pagos_insertar(monto: float, fec_pago: datetime, id_objetos: int, id_usuario: int, id_metodo_pago: int, created_by: str = "script") -> bool:
+    # <-- CORREGIDO: Revertido a la versión de 6 parámetros del Python original
+    # Convierte la fecha a string aceptada por MySQL si es un datetime
+    fec_str = fec_pago.strftime('%Y-%m-%d %H:%M:%S') if isinstance(fec_pago, datetime) else fec_pago
+    args = [monto, fec_str, id_objetos, id_usuario, id_metodo_pago, created_by]
     return _call_proc_no_results("sp_pagos_insertar", args)
 
 
@@ -375,22 +431,34 @@ def pagos_restaurar(id_pago: int, updated_by: str = "script") -> bool:
 def pagos_listar_activos():
     rows = _call_proc_with_results("sp_pagos_listar_activos")
     print("\n=== PAGOS ACTIVOS ===")
-    for row in rows:
-        id_pago, monto, fec_pago, objeto_asociado, material = row
-        print(f"ID:{id_pago:<4} | {monto} | Fecha:{fec_pago} | Obj:{objeto_asociado} (Mat:{material})")
+    try:
+        # <-- CORREGIDO: Ajustado a 7 columnas (esta era la causa del error)
+        for row in rows:
+            # Se asume que el SP devuelve: id, monto, fecha, objeto, usuario, metodo_pago, created_at
+            id_pago, monto, fec_pago, objeto_asociado, usuario_nombre, metodo_pago, created_at = row
+            print(f"ID:{id_pago:<3} | {monto} | Fecha:{fec_pago} | Obj:{objeto_asociado} | Usu:{usuario_nombre} | MP:{metodo_pago}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_pagos_listar_activos' no coincide.")
+        if rows: print(f"Se esperaban 7 columnas, pero la fila recibida fue: {rows[0]}")
 
 
 def pagos_listar_todo():
     rows = _call_proc_with_results("sp_pagos_listar_todo")
     print("\n=== TODOS LOS PAGOS ===")
-    for row in rows:
-        id_pago, monto, fec_pago, objeto_asociado, material, deleted = row
-        estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
-        print(f"ID:{id_pago:<4} | {monto} | {fec_pago} | {estado} | Obj:{objeto_asociado} (Mat:{material})")
+    try:
+        # <-- CORREGIDO: Ajustado a 8 columnas
+        for row in rows:
+            # Se asume que el SP devuelve: 7 columnas + deleted + created_at
+            id_pago, monto, fec_pago, objeto_asociado, usuario_nombre, metodo_pago, deleted, created_at = row
+            estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
+            print(f"ID:{id_pago:<3} | {monto} | {fec_pago} | {estado} | Obj:{objeto_asociado}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_pagos_listar_todo' no coincide.")
+        if rows: print(f"Se esperaban 8 columnas, pero la fila recibida fue: {rows[0]}")
 
 
 # ---------- FUNCIONES PARA 'metodos_pago' (Asumido del Script Python) ----------
-# (Estas funciones NO estaban en el SQL original, pero sí en el Python. Se asumen los SPs)
+# (Esta sección parece estar correcta y consistente)
 
 def metodos_pago_insertar(nombre: str, otros_detalles: str, created_by: str = "script") -> bool:
     # Asume SP: sp_metodos_pago_insertar(p_nombre, p_otros_detalles, p_created_by)
@@ -417,19 +485,25 @@ def metodos_pago_listar_activos():
     # Asume SP: sp_metodos_pago_listar_activos()
     rows = _call_proc_with_results("sp_metodos_pago_listar_activos")
     print("\n=== METODOS DE PAGO ACTIVOS ===")
-    for row in rows:
-        id_metodo, nombre, otros_detalles, created_at = row
-        print(f"ID:{id_metodo:<3} | {nombre:<20} | {otros_detalles}")
+    try:
+        for row in rows:
+            id_metodo, nombre, otros_detalles, created_at = row
+            print(f"ID:{id_metodo:<3} | {nombre:<20} | {otros_detalles}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_metodos_pago_listar_activos' no coincide.")
 
 
 def metodos_pago_listar_todo():
     # Asume SP: sp_metodos_pago_listar_todo()
     rows = _call_proc_with_results("sp_metodos_pago_listar_todo")
     print("\n=== TODOS LOS METODOS DE PAGO ===")
-    for row in rows:
-        id_metodo, nombre, otros_detalles, deleted, created_at = row
-        estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
-        print(f"ID:{id_metodo:<3} | {nombre:<20} | {estado}")
+    try:
+        for row in rows:
+            id_metodo, nombre, otros_detalles, deleted, created_at = row
+            estado = "ACTIVO" if deleted == 0 else "ELIMINADO"
+            print(f"ID:{id_metodo:<3} | {nombre:<20} | {estado}")
+    except ValueError:
+        print("❌ Error de desestructuración. La cantidad de columnas recibidas de 'sp_metodos_pago_listar_todo' no coincide.")
 
 
 # ---------------- MENÚ PRINCIPAL POR TABLAS ----------------
@@ -732,23 +806,32 @@ def menu_tabla_pagos():
         print("5) Restaurar por ID")
         print("0) Volver")
         op = input("Opción: ").strip()
+        # <-- CORREGIDO: Revertido al menú de 6 parámetros del Python original
         if op == "1":
             try:
                 monto = float(input("Monto (ej: 1000.50): ").strip())
             except ValueError:
                 print("Monto inválido")
                 continue
-            
-            comentario = input("Comentario (ej: Pago por 5kg PET): ").strip()
-            
+            # Permitir al usuario ingresar fecha en formato legible o usar NOW si deja vacío
+            fec_input = input("Fecha pago (YYYY-MM-DD HH:MM:SS) o vacío para NOW: ").strip()
+            if fec_input == "":
+                fec = datetime.now()
+            else:
+                try:
+                    fec = datetime.strptime(fec_input, '%Y-%m-%d %H:%M:%S')
+                except ValueError:
+                    print("Formato fecha inválido")
+                    continue
             try:
                 id_obj = int(input("ID objeto: ").strip())
+                id_user = int(input("ID usuario: ").strip())
+                id_mp = int(input("ID metodo pago: ").strip())
             except ValueError:
-                print("ID inválido")
+                print("IDs inválidos")
                 continue
-            
             created_by = input("Creado por: ").strip() or "script"
-            ok = pagos_insertar(monto, comentario, id_obj, created_by)
+            ok = pagos_insertar(monto, fec, id_obj, id_user, id_mp, created_by)
             print("✅ OK" if ok else "❌ Error")
         elif op == "2":
             pagos_listar_activos()

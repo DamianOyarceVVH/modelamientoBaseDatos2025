@@ -54,6 +54,18 @@ BEGIN
     ORDER BY nombre;
 END//
 
+-- 5. Restaurar roles
+DROP PROCEDURE IF EXISTS sp_roles_restaurar//
+CREATE PROCEDURE sp_roles_restaurar(
+    IN p_id_roles INT,
+    IN p_updated_by VARCHAR(100)
+)
+BEGIN
+    UPDATE roles
+    SET deleted = 0, updated_by = p_updated_by
+    WHERE id_roles = p_id_roles;
+END//
+
 /* ----------------------------------------------------------------
    PROCEDIMIENTOS PARA LA TABLA 'usuarios'
    ---------------------------------------------------------------- */
@@ -117,6 +129,18 @@ BEGIN
 	ORDER BY u.apellido, u.nombre;
 END//
 
+-- 5. Restaurar usuarios
+DROP PROCEDURE IF EXISTS sp_usuarios_restaurar//
+CREATE PROCEDURE sp_usuarios_restaurar(
+    IN p_id_usuario INT,
+    IN p_updated_by VARCHAR(100)
+)
+BEGIN
+    UPDATE usuarios
+    SET deleted = 0, updated_by = p_updated_by
+    WHERE id_usuario = p_id_usuario;
+END//
+
 /* ----------------------------------------------------------------
    PROCEDIMIENTOS PARA LA TABLA 'basureros'
    ---------------------------------------------------------------- */
@@ -162,6 +186,18 @@ BEGIN
 	SELECT id_basurero, ubicacion, capacidad_kg, created_at, deleted
 	FROM basureros
 	ORDER BY ubicacion;
+END//
+
+-- 5. Restaurar basureros
+DROP PROCEDURE IF EXISTS sp_basureros_restaurar//
+CREATE PROCEDURE sp_basureros_restaurar(
+    IN p_id_basurero INT,
+    IN p_updated_by VARCHAR(100)
+)
+BEGIN
+    UPDATE basureros
+    SET deleted = 0, updated_by = p_updated_by
+    WHERE id_basurero = p_id_basurero;
 END//
 
 /* ----------------------------------------------------------------
@@ -211,6 +247,17 @@ BEGIN
 	SELECT id_material, nombre, composicion, precio_unidad, unidad_medida, deleted
 	FROM materiales
 	ORDER BY nombre;
+END//
+
+DROP PROCEDURE IF EXISTS sp_materiales_restaurar//
+CREATE PROCEDURE sp_materiales_restaurar(
+    IN p_id_material INT,
+    IN p_updated_by VARCHAR(100)
+)
+BEGIN
+    UPDATE materiales
+    SET deleted = 0, updated_by = p_updated_by
+    WHERE id_material = p_id_material;
 END//
 
 /* ----------------------------------------------------------------
@@ -278,6 +325,18 @@ BEGIN
 	ORDER BY o.created_at DESC;
 END//
 
+-- 5. Restaurar objetos
+DROP PROCEDURE IF EXISTS sp_objetos_restaurar//
+CREATE PROCEDURE sp_objetos_restaurar(
+    IN p_id_objeto INT,
+    IN p_updated_by VARCHAR(100)
+)
+BEGIN
+    UPDATE objetos
+    SET deleted = 0, updated_by = p_updated_by
+    WHERE id_objeto = p_id_objeto;
+END//
+
 /* ----------------------------------------------------------------
    PROCEDIMIENTOS PARA LA TABLA 'pagos'
    ---------------------------------------------------------------- */
@@ -341,6 +400,18 @@ BEGIN
 	ORDER BY p.fec_pago DESC;
 END//
 
+-- 5. Restaurar pagos
+DROP PROCEDURE IF EXISTS sp_pagos_restaurar//
+CREATE PROCEDURE sp_pagos_restaurar(
+    IN p_id_pago BIGINT,
+    IN p_updated_by VARCHAR(100)
+)
+BEGIN
+    UPDATE pagos
+    SET deleted = 0, updated_by = p_updated_by
+    WHERE id_pago = p_id_pago;
+END//
+
 -- Restaurar el delimitador por defecto
 DELIMITER ;
 
@@ -348,10 +419,12 @@ DELIMITER ;
    PRUEBA DE TODOS LOS PROCEDIMIENTOS
    ---------------------------------------------------------------- */
  
- -- 1. Roles
+-- 1. Roles
 CALL sp_roles_insertar('Supervisor', 'Monitorea operaciones de basureros y rendimiento del personal técnico.', 'system_admin');
 CALL sp_roles_borrado_logico(3, 'system');
 CALL sp_roles_listar_activos();
+CALL sp_roles_listar_todo();
+CALL sp_roles_restaurar(3, 'system_restaurar'); -- <--- PRUEBA RESTAURAR
 CALL sp_roles_listar_todo();
 
 -- 2. Usuarios
@@ -359,11 +432,15 @@ CALL sp_usuarios_insertar('Juan', 'Pérez', '555-1234', 'juan.perez@email.com', 
 CALL sp_usuarios_borrado_logico(3, 'system');
 CALL sp_usuarios_listar_activos();
 CALL sp_usuarios_listar_todo();
+CALL sp_usuarios_restaurar(3, 'system_restaurar'); -- <--- PRUEBA RESTAURAR
+CALL sp_usuarios_listar_todo();
 
 -- 3. Basureros
 CALL sp_basureros_insertar('Entrada Principal, Bloque C', 100, 'system');
 CALL sp_basureros_borrado_logico(2, 'system');
 CALL sp_basureros_listar_activos();
+CALL sp_basureros_listar_todo();
+CALL sp_basureros_restaurar(2, 'system_restaurar'); -- <--- PRUEBA RESTAURAR
 CALL sp_basureros_listar_todo();
 
 -- 4. Materiales
@@ -371,15 +448,21 @@ CALL sp_materiales_insertar('Papel', 'Fibras de celulosa', 0.01, 'kg', 'system')
 CALL sp_materiales_borrado_logico(1, 'system');
 CALL sp_materiales_listar_activos();
 CALL sp_materiales_listar_todo();
+CALL sp_materiales_restaurar(1, 'system_restaurar'); -- <--- PRUEBA RESTAURAR
+CALL sp_materiales_listar_todo();
 
 -- 5. Objetos
 CALL sp_objetos_insertar('Botella Agua 1.5L', 'Botella de plástico transparente', 50, 1, 1, 'usuario_registro');
 CALL sp_objetos_borrado_logico(2, 'system');
 CALL sp_objetos_listar_activos();
 CALL sp_objetos_listar_todo();
+CALL sp_objetos_restaurar(2, 'system_restaurar'); -- <--- PRUEBA RESTAURAR
+CALL sp_objetos_listar_todo();
 
--- 6. sp_pagos_insertar	CALL sp_pagos_insertar(25.50, 'Pago por reciclaje de plásticos', 10, 'cajero_1');
+-- 6. Pagos
 CALL sp_pagos_insertar(25.50, 'Pago por reciclaje de plásticos', 1, 'cajero_1');
 CALL sp_pagos_borrado_logico(200, 'system');
 CALL sp_pagos_listar_activos();
+CALL sp_pagos_listar_todo();
+CALL sp_pagos_restaurar(200, 'system_restaurar'); -- <--- PRUEBA RESTAURAR
 CALL sp_pagos_listar_todo();
